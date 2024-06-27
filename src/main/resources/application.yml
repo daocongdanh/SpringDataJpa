@@ -1,0 +1,18 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: SpringDataJpa
+  datasource:
+    url: jdbc:mysql://localhost:3306/my_shop
+    username: springstudent
+    password: springstudent
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        enable_lazy_load_no_trans: true
+        format_sql: true
+    show-sql: true
