@@ -87,4 +87,9 @@ public class ProductServiceImpl implements ProductService {
     public PageReponses getAllProductsWithSortByMultipleColumnsAndSearch(int pageNo, int pageSize, String[] sortBy, String... search) {
         return searchRepository.getAllProductsWithSortByMultipleColumnsAndSearch(pageNo,pageSize,sortBy,search);
     }
+
+    @Override
+    public PageReponses getAllProductsAdvanceSearch(int pageNo, int pageSize, String[] sortBy, String[] search) {
+        return searchRepository.getAllProductsAdvanceSearch(pageNo, pageSize,sortBy,search);
+    }
 }

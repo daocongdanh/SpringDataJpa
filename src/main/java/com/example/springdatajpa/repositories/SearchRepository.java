@@ -1,10 +1,12 @@
 package com.example.springdatajpa.repositories;
 
+import com.example.springdatajpa.models.Product;
 import com.example.springdatajpa.repositories.custom.SearchProduct;
 import com.example.springdatajpa.responses.PageReponses;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import jakarta.persistence.criteria.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
@@ -115,5 +117,72 @@ public class SearchRepository {
         }
         Query query = entityManager.createQuery(sqlCount.toString());
         return (long)query.getSingleResult();
+    }
+
+    public PageReponses getAllProductsAdvanceSearch(int pageNo, int pageSize, String[] sortBy, String[] search) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Product> query = criteriaBuilder.createQuery(Product.class);
+        CriteriaQuery<Product> queryCount = criteriaBuilder.createQuery(Product.class);
+        Root<Product> root = query.from(Product.class);
+
+        query.select(root);
+
+        pageNo = pageNo > 0 ? pageNo - 1 : pageNo;
+
+        List<Predicate> predicates = new ArrayList<>();
+        // Search
+        if(search != null){
+            List<SearchProduct> searchProducts = new ArrayList<>();
+            for(String s : search){
+                Pattern pattern = Pattern.compile("(.*)(:|>|<)(.*)");
+                Matcher matcher = pattern.matcher(s);
+                if(matcher.find()){
+                    SearchProduct searchProduct
+                            = new SearchProduct(matcher.group(1),matcher.group(2),matcher.group(3));
+                    searchProducts.add(searchProduct);
+                }
+            }
+            for(SearchProduct searchProduct : searchProducts){
+                if(searchProduct.getOperator().equals(">")){
+                    predicates.add(criteriaBuilder.greaterThan(root.get(searchProduct.getKey()),
+                            Float.parseFloat(searchProduct.getValue().toString())));
+                }
+                else if(searchProduct.getOperator().equals("<")){
+                    predicates.add(criteriaBuilder.lessThan(root.get(searchProduct.getKey()),
+                            Float.parseFloat(searchProduct.getValue().toString())));
+                }
+                else{
+                    predicates.add(criteriaBuilder.like(root.get(searchProduct.getKey()),
+                            "%"+searchProduct.getValue().toString()+"%"));
+                }
+            }
+        }
+
+        List<Order> orders = new ArrayList<>();
+        //Sort
+        for(String sort : sortBy){
+            //firstName:asc
+            Pattern pattern = Pattern.compile("(.*)(:)(asc|desc)");
+            Matcher matcher = pattern.matcher(sort);
+            if(matcher.find()){
+                if(matcher.group(3).equals("asc")){
+                    orders.add(criteriaBuilder.asc(root.get(matcher.group(1))));
+                }
+                else{
+                    orders.add(criteriaBuilder.desc(root.get(matcher.group(1))));
+                }
+            }
+        }
+        query.where(predicates.toArray(new Predicate[0]));
+        query.orderBy(orders);
+        List<Product> products = entityManager.createQuery(query)
+                .setFirstResult(pageNo)
+                .setMaxResults(pageSize)
+                .getResultList();
+        return PageReponses.builder()
+                .pageNo(pageNo+1)
+                .pageSize(pageSize)
+                .data(products)
+                .build();
     }
 }

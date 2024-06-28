@@ -61,4 +61,18 @@ public class ProductController {
              @RequestParam(required = false) String ...search){
         return productService.getAllProductsWithSortByMultipleColumnsAndSearch(pageNo, pageSize,sortBy,search);
     }
+
+    /**
+     * Using Criteria Query Api
+     * Lấy tất cả product kết hợp phân trang, sort trên nhiều columns
+     * Tìm kiếm trên nhiều columns
+     * */
+    @GetMapping("/advance-search")
+    public PageReponses getAllProductsAdvanceSearch
+    (@RequestParam(defaultValue = "1") int pageNo,
+     @RequestParam(defaultValue = "10") int pageSize,
+     @RequestParam(required = false) String[ ] sortBy,
+     @RequestParam(required = false) String ...search){
+        return productService.getAllProductsAdvanceSearch(pageNo, pageSize,sortBy,search);
+    }
 }

@@ -12,4 +12,6 @@ public interface ProductService {
 
     PageReponses getAllProductsWithSortByMultipleColumnsAndSearch(
             int pageNo, int pageSize, String[] sortBy,String ...search);
+
+    PageReponses getAllProductsAdvanceSearch(int pageNo, int pageSize, String[] sortBy, String[] search);
 }
